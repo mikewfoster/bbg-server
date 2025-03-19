@@ -11,8 +11,11 @@ const options = {
 };
 
 exports.create = function(req, res) {    
+    console.log('Creating task');
+    
     taskService.create(req.body)
-        .then((data) => {       
+        .then((data) => {   
+            console.log('data', data);    
             res.json({
                 success: true,
                 title: 'Task created successfully.',

@@ -159,7 +159,7 @@ async function updatePoints(params) {
     if (params.point_id) {
         const foundPoint = await db.Points.findOne({ where: { id: params.point_id } });
 
-        if (!foundReward) throw Error('This point could not be found.');
+        if (!foundPoint) throw Error('This point could not be found.');
 
         const pointData = foundPoint.dataValues;        
         

@@ -29,7 +29,7 @@ exports.update = function(req, res, next) {
     const id = req.body.id;
 
     const reward = {
-        title:          req.body.email,
+        title:          req.body.title,
         description:    req.body.description,
         link:           req.body.link,
         value:          req.body.value,

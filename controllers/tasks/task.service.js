@@ -2,6 +2,7 @@ const db = require('@root/models');
 const Sequelize = require('sequelize');
 const dtfns = require('date-fns');
 const rewardService = require('@controllers/rewards/reward.service');
+const pointService = require('@controllers/points/point.service');
 
 
 module.exports = {
@@ -12,7 +13,7 @@ module.exports = {
 };
 
 async function Get(id) {
-    var payload; 
+    let task = {}
 
     await db.Tasks.findOne({ raw: true, where: { id: id } })
         .then((currTask) => {
@@ -25,13 +26,33 @@ async function Get(id) {
                 cleanTask.updatedAt = updatedAt        
             }
             
-            payload = cleanTask;
+            task = cleanTask;
         })
         .catch((err) => {
             throw Error('Could not find task record. Please try again.');
         });
+
+    if (task.reward_id && !task.point_id) {
+        await rewardService.Get(task.reward_id)
+            .then((data) => {       
+                task.item = data
+            })
+            .catch((err) => {
+                throw Error('Could not find reward record. Please try again.');
+            });
+    }
+
+    if (task.point_id && !task.reward_id) {
+        await pointService.Get(task.point_id)
+            .then((data) => {       
+                task.item = data 
+            })
+            .catch((err) => {
+                throw Error('Could not find point record. Please try again.');
+            });
+    }
     
-    return payload;
+    return task;
 }
 
 async function GetAll() {
@@ -54,13 +75,14 @@ async function GetAll() {
 }
 
 async function create(params) {
+    console.log('params', params);    
     var retVal;
 
     var task = {
-        user_id:        req.body.user_id,
-        note:           req.body.note || null,
-        reward_id:      req.body.reward_id || null,
-        point_id:       req.body.point_id || null,
+        user_id:        params.user_id,
+        note:           params.note || null,
+        reward_id:      params.reward_id || null,
+        point_id:       params.point_id || null,
         create_id:      params.username,
         mod_id:         params.username,
         concurrency_ts: new Date(),   

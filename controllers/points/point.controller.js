@@ -28,7 +28,7 @@ exports.update = function(req, res, next) {
     const id = req.body.id;
 
     const point = {
-        title:          req.body.email,
+        title:          req.body.title,
         description:    req.body.description,
         value:          req.body.value,
         username:       req.body.username,
