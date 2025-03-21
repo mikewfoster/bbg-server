@@ -25,6 +25,10 @@ module.exports = {
                 type: true.INTEGER, 
                 allowNull: false
             },
+            completed: { 
+                type: Sequelize.DATE, 
+                allowNull: true 
+            },
             concurrency_ts: { 
                 type: Sequelize.DATE, 
                 allowNull: false 

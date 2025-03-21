@@ -123,7 +123,7 @@ async function update(UserId, params) {
             }
         })
         .catch((err) => {
-            throw Error('Could not create reward record. Please try again.');
+            throw Error('Could not update reward record. Please try again.');
         });
         
     return retVal

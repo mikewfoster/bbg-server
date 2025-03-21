@@ -11,6 +11,7 @@ const authorize = require('@middleware/authorize');
 router.get('/', authorize.isLoggedIn, access.isBabyorAdmin, task.getAllTasks);
 router.get('/:id', authorize.isLoggedIn, access.isBabyorAdmin, task.getTask);
 router.post('/', authorize.isLoggedIn, access.isBabyorAdmin, task.createSchema, task.create);
+router.post('/:id/accept', authorize.isLoggedIn, access.isBabyorAdmin, task.acceptSchema, task.accept);
 router.patch('/:id', authorize.isLoggedIn, access.isSelforAdmin, task.updateSchema, task.update);
 
 module.exports = router;

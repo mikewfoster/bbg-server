@@ -28,19 +28,38 @@ exports.create = function(req, res) {
         });
 }
 
-exports.update = function(req, res, next) {
-    const id = req.body.id;
-    
+exports.accept = function(req, res, next) {    
+    console.log('Accepting task');
     const task = {
         user_id:        req.body.user_id,
-        note:           req.body.note,
-        reward_id:      req.body.reward_id,
-        point_id:       req.body.point_id,
         username:       req.body.username,
         id:             req.params.id
     }
 
-    taskService.update(id, task)
+    taskService.accept(task)
+        .then((data) => {   
+            console.log('data', data);    
+            res.json({
+                success: true,
+                title: 'Task accepted successfully.',
+                task: data
+            });
+        })
+        .catch((err) => {
+            const error = e.setError('Could not accept task.', err.message)
+            res.json(error);
+        });
+}
+
+exports.update = function(req, res, next) {
+    const task = {
+        user_id:        req.body.user_id,
+        username:       req.body.username,
+        id:             req.params.id,
+        note:           req.body.note
+    }
+
+    taskService.update(task)
         .then((data) => {
             req.task = data;
             res.json({
@@ -55,7 +74,7 @@ exports.update = function(req, res, next) {
         });
 }
 
-exports.getTask = function(req, res) {    
+exports.getTask = function(req, res) {  
     taskService.Get(req.params.id)
         .then((task) => {       
             res.json({
@@ -92,6 +111,14 @@ exports.createSchema = function(req, res, next) {
         note: Joi.string().max(255).allow(null, ''), 
         reward_id: Joi.number().allow(null, ''), 
         point_id: Joi.number().allow(null, ''), 
+        username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/)
+    });
+    
+    v.validateSchema(schema, options, req, res, next);
+}
+exports.acceptSchema = function(req, res, next) {
+    const schema = Joi.object({
+        user_id: Joi.number().required(),
         username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/)
     });
     

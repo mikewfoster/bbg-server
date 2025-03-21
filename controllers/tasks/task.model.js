@@ -10,6 +10,7 @@ function model(sequelize) {
         point_id: {type: DataTypes.INTEGER, allowNull: true },
         create_id: { type: DataTypes.STRING(50), allowNull: false },
         mod_id: { type: DataTypes.STRING(50), allowNull: false },
+        completed: { type: DataTypes.DATE, allowNull: true },
         concurrency_ts: { type: DataTypes.DATE, allowNull: false }
     };
 

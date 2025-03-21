@@ -195,7 +195,7 @@ async function update(UserId, params) {
             }
         })
         .catch((err) => {
-            throw Error('Could not create point record. Please try again.');
+            throw Error('Could not update point record. Please try again.');
         });
         
     return retVal

@@ -3,12 +3,14 @@ const Sequelize = require('sequelize');
 const dtfns = require('date-fns');
 const rewardService = require('@controllers/rewards/reward.service');
 const pointService = require('@controllers/points/point.service');
+const userService = require('@controllers/users/user.service');
 
 
 module.exports = {
     Get,
     GetAll,
     create,
+    accept,
     update
 };
 
@@ -17,16 +19,28 @@ async function Get(id) {
 
     await db.Tasks.findOne({ raw: true, where: { id: id } })
         .then((currTask) => {
-            const { createdAt, create_id, ...cleanTask } = currTask
-
-            if (cleanTask.updatedAt) {
-                var updatedAt = new Date(cleanTask.updatedAt);
+            if (currTask.updatedAt) {
+                var updatedAt = new Date(currTask.updatedAt);
                     updatedAt = dtfns.format(updatedAt, 'MMM. d, yyyy')
 
-                cleanTask.updatedAt = updatedAt        
+                currTask.updatedAt = updatedAt        
+            }
+
+            if (currTask.createdAt) {
+                var createdAt = new Date(currTask.createdAt);
+                    createdAt = dtfns.format(createdAt, 'MMM. d, yyyy')
+
+                currTask.createdAt = createdAt        
+            }
+
+            if (currTask.completed) {
+                var completed = new Date(currTask.completed);
+                    completed = dtfns.format(completed, 'MMM. d, yyyy')
+
+                currTask.completed = completed        
             }
             
-            task = cleanTask;
+            task = currTask;
         })
         .catch((err) => {
             throw Error('Could not find task record. Please try again.');
@@ -55,27 +69,35 @@ async function Get(id) {
     return task;
 }
 
-async function GetAll() {
+async function GetAll() {  
     var payload = [];
+    var tasks = []
 
-    await db.Tasks.findAll({ raw: true })
+    await db.Tasks.findAll({ 
+        raw: true,        
+        order: [
+            ['createdAt', 'DESC'],
+        ],
+     })
         .then((allTasks) => {
             tasks = allTasks
-
-            Object.keys(tasks).forEach((p) => {
-                var task = omitTasksDetails(tasks[p]);
-                payload.push(task);
-            });
         })
         .catch((err) => {
             throw Error('Could not find tasks records. Please try again.');
         });
+
+    for (const t of tasks) {
+        var task = await omitTasksDetails(t);
+
+        await Get(task.id).then((data) => {
+            payload.push(data);
+        })
+    }
     
     return payload;
 }
 
 async function create(params) {
-    console.log('params', params);    
     var retVal;
 
     var task = {
@@ -112,7 +134,52 @@ async function create(params) {
     return retVal;
 }
 
-async function update(UserId, params) {    
+async function accept(params) {    
+    const foundTask = await db.Tasks.findOne({ where: { id: params.id } });
+
+    var retVal;
+    var taskDetails = {}
+
+    if (!foundTask) {
+        throw Error(`Task not found. id: ${params.id}`);
+    }
+
+    await Get(foundTask.id).then((data) => {
+        taskDetails = data
+    })
+
+    const userPoints = {
+        point_id:       taskDetails.point_id,
+        reward_id:      taskDetails.reward_id,
+        username:       params.username,
+        user_id:        taskDetails.user_id
+    }
+
+    await userService.updatePoints(userPoints)
+        .then((data) => {
+            retVal = data;
+        })
+        .catch((err) => {
+            throw Error('Could not accept task. Please try again.');
+        });
+
+    foundTask.completed        = new Date();
+    foundTask.mod_id           = params.username;
+    foundTask.concurrency_ts   = new Date();
+
+    await foundTask.save({raw: true})
+        .then((updatedTask) => {
+            console.log('updatedTask', updatedTask);
+            
+        })
+        .catch((err) => {
+            throw Error('Could not complete task. Please try again.');
+        });
+        
+    return retVal
+}
+
+async function update(params) {    
     const foundTask = await db.Tasks.findOne({ where: { id: params.id } });
 
     var retVal;
@@ -122,9 +189,6 @@ async function update(UserId, params) {
     }
 
     foundTask.note             = params.note || foundTask.note;
-    foundTask.user_id          = params.user_id || foundTask.user_id;
-    foundTask.reward_id        = params.reward_id || foundTask.reward_id;
-    foundTask.point_id         = params.point_id || foundTask.point_id;
     foundTask.mod_id           = params.username;
     foundTask.concurrency_ts   = new Date();
 
@@ -144,7 +208,7 @@ async function update(UserId, params) {
             }
         })
         .catch((err) => {
-            throw Error('Could not create task record. Please try again.');
+            throw Error('Could not update task record. Please try again.');
         });
         
     return retVal
@@ -158,6 +222,13 @@ function omitTasksDetails(task) {
             createdAt = dtfns.format(createdAt, 'MMM. d, yyyy')
 
         cleanTask.createdAt = createdAt        
+    }
+
+    if (cleanTask.completed) {
+        var completed = new Date(cleanTask.completed);
+            completed = dtfns.format(completed, 'MMM. d, yyyy')
+
+        cleanTask.completed = completed        
     }
 
     return cleanTask;

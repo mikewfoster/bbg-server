@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
             point_id: DataTypes.INTEGER,
             create_id: DataTypes.STRING(50),
             mod_id: DataTypes.STRING(50),
+            completed: DataTypes.DATE,
             concurrency_ts: DataTypes.DATE
         },
         {
