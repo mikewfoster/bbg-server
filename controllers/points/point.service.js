@@ -5,6 +5,7 @@ const rewardService = require('@controllers/rewards/reward.service');
 
 module.exports = {
     Get,
+    GetByName,
     GetTotalPoints,
     GetPointsHistory,
     GetAll,
@@ -16,6 +17,31 @@ async function Get(id) {
     var payload; 
 
     await db.Points.findOne({ raw: true, where: { id: id } })
+        .then((currPoint) => {
+            const { createdAt, create_id, ...cleanPoint } = currPoint
+
+            if (cleanPoint.updatedAt) {
+                var updatedAt = new Date(cleanPoint.updatedAt);
+                    updatedAt = dtfns.format(updatedAt, 'MMM. d, yyyy')
+
+                cleanPoint.updatedAt = updatedAt        
+            }
+            
+            payload = cleanPoint;
+        })
+        .catch((err) => {
+            throw Error('Could not find point record. Please try again.');
+        });
+    
+    return payload;
+}
+
+async function GetByName(name) {
+    var payload; 
+
+    console.log('GetByName', name);
+
+    await db.Points.findOne({ raw: true, where: { title: name } })
         .then((currPoint) => {
             const { createdAt, create_id, ...cleanPoint } = currPoint
 
@@ -112,7 +138,12 @@ async function GetPointsHistory(UserId) {
 async function GetAll() {
     var payload = [];
 
-    await db.Points.findAll({ raw: true })
+    await db.Points.findAll({ 
+        raw: true,
+        order: [
+            ['createdAt', 'DESC'],
+        ], }
+    )
         .then((allPoints) => {
             points = allPoints
 

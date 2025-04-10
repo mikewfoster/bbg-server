@@ -93,6 +93,40 @@ exports.updatePoints = function(req, res, next) {
         });
 }
 
+exports.completeGame = async function(req, res, next) {
+    let point = {};
+
+    await pointService.GetByName(req.body.game)
+        .then((data) => {
+            point = data;
+            console.log(point);            
+        })
+        .catch((err) => {
+            const error = e.setError('Could not find associated point for this game.', err.message)
+            res.json(error);
+        });
+
+    const userPoints = {
+        point_id:       point.id,
+        username:       req.body.username,
+        user_id:        req.params.id
+    }
+
+    await userService.updatePoints(userPoints)
+        .then((data) => {
+            req.point = data;
+            res.json({
+                success: true,
+                title: 'Points adjusted successfully.',
+                point: data
+            });
+        })
+        .catch((err) => {
+            const error = e.setError('Could not adjust points.', err.message)
+            res.json(error);
+        });
+}
+
 exports.authenticate = function(req, res, next) {
     userService.authenticate(req.body)
         .then((user) => {
@@ -248,6 +282,15 @@ exports.updatePointsSchema = function(req, res, next) {
     const schema = Joi.object({
         PointId: Joi.number().allow(null, ''), 
         RewardId: Joi.number().allow(null, ''), 
+        username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/)
+    });
+
+    v.validateSchema(schema, options, req, res, next);
+}
+
+exports.completeGameSchema = function(req, res, next) {
+    const schema = Joi.object({
+        game: Joi.string().required(), 
         username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/)
     });
 
