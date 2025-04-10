@@ -19,7 +19,7 @@ function isBaby(req, res, next) {
 }
 
 function isSelforAdmin(req, res, next) {  
-    if (req.user.id == req.params.id || req.user.role === 1) {
+    if ((req.user.id == req.body.id || req.user.id == req.params.id) || req.user.role === 1) {
         next();
     } else {
         const error = e.setError('Access denied.', 'Only Daddy can do this.')

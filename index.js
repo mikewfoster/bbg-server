@@ -63,8 +63,7 @@ function notFound(req, res, next) {
 function errorHandler(err, req, res, next) {  
     res.status(res.statusCode || 500);
 
-    console.log(err);
-    
+    console.error(err);
 
     res.json({
         success: false,
@@ -89,7 +88,7 @@ app.listen(port, () => {
             db.sequelize.sync();
         })
         .catch((err) => {
-            console.log(err);
+            console.error(err);
         });
     
 });

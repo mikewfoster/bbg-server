@@ -10,12 +10,10 @@ const options = {
     stripUnknown: true // remove unknown props
 };
 
-exports.create = function(req, res) {    
-    console.log('Creating task');
+exports.create = function(req, res) {   
     
     taskService.create(req.body)
-        .then((data) => {   
-            console.log('data', data);    
+        .then((data) => {      
             res.json({
                 success: true,
                 title: 'Task created successfully.',
@@ -28,8 +26,7 @@ exports.create = function(req, res) {
         });
 }
 
-exports.accept = function(req, res, next) {    
-    console.log('Accepting task');
+exports.accept = function(req, res, next) {   
     const task = {
         user_id:        req.body.user_id,
         username:       req.body.username,
@@ -37,8 +34,7 @@ exports.accept = function(req, res, next) {
     }
 
     taskService.accept(task)
-        .then((data) => {   
-            console.log('data', data);    
+        .then((data) => {      
             res.json({
                 success: true,
                 title: 'Task accepted successfully.',

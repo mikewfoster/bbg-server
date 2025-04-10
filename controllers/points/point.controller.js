@@ -25,6 +25,7 @@ exports.create = function(req, res) {
 }
 
 exports.update = function(req, res, next) {
+    
     const id = req.body.id;
 
     const point = {

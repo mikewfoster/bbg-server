@@ -169,7 +169,6 @@ async function accept(params) {
 
     await foundTask.save({raw: true})
         .then((updatedTask) => {
-            console.log('updatedTask', updatedTask);
             
         })
         .catch((err) => {
