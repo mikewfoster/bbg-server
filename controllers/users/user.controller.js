@@ -98,8 +98,7 @@ exports.completeGame = async function(req, res, next) {
 
     await pointService.GetByName(req.body.game)
         .then((data) => {
-            point = data;
-            console.log(point);            
+            point = data;        
         })
         .catch((err) => {
             const error = e.setError('Could not find associated point for this game.', err.message)
@@ -107,10 +106,12 @@ exports.completeGame = async function(req, res, next) {
         });
 
     const userPoints = {
-        point_id:       point.id,
-        username:       req.body.username,
-        user_id:        req.params.id
+        point_id:               point.id,
+        username:               req.body.username,
+        user_id:                req.params.id,
     }
+
+    if (req.body?.point_value_override) userPoints.point_value_override = req.body.point_value_override;
 
     await userService.updatePoints(userPoints)
         .then((data) => {
@@ -291,7 +292,8 @@ exports.updatePointsSchema = function(req, res, next) {
 exports.completeGameSchema = function(req, res, next) {
     const schema = Joi.object({
         game: Joi.string().required(), 
-        username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/)
+        username: Joi.string().required().min(6).max(30).regex(/(^[a-zA-Z0-9_]*$)/),
+        point_value_override: Joi.number().allow(null, '')
     });
 
     v.validateSchema(schema, options, req, res, next);

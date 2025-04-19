@@ -39,8 +39,6 @@ async function Get(id) {
 async function GetByName(name) {
     var payload; 
 
-    console.log('GetByName', name);
-
     await db.Points.findOne({ raw: true, where: { title: name } })
         .then((currPoint) => {
             const { createdAt, create_id, ...cleanPoint } = currPoint

@@ -164,7 +164,12 @@ async function updatePoints(params) {
         const pointData = foundPoint.dataValues;        
         
         adjustment.PointId     = pointData.id;
-        adjustment.Points      = pointData.value;
+
+        if (params?.point_value_override) {
+            adjustment.Points = params.point_value_override;
+        } else {
+            adjustment.Points = pointData.value;
+        }
     }
 
     if (params.reward_id) {
